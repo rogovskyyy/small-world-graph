@@ -18,13 +18,14 @@ import java.io.IOException;
 // https://en.wikipedia.org/wiki/Barab%C3%A1si%E2%80%93Albert_model
 // https://en.wikipedia.org/wiki/Watts%E2%80%93Strogatz_model
 
-// TOOD
+// UWAGI
 // Najbliższy wierzchołek musi być zawsze połączony z resztą.
+// Dziwny render punktów
 
 public class Main extends Application {
 
     private final int WINDOW_SIZE = 500;                        // Wielkość okna
-    private final int VERTEXES = 10;                           // Liczba wierzchołków grafu
+    private final int VERTEXES = 250;                           // Liczba wierzchołków grafu
     private final int SIZE = WINDOW_SIZE / 10;                  // Ilość elementów na długość / szerokość
     private int[][] points = new int[50][50];                   // Pojedyńcza komórka na sieci kwadratowej
     private List<Vector2f> v = new Vertexes().vertexes;         // Lista wierzchołków
@@ -44,7 +45,7 @@ public class Main extends Application {
             }
         }
 
-        // Wygeneruj n losowych punktów
+        // Wygeneruj n losowych wierzchołków
         for (int i = 0; i < VERTEXES; i++) {
             while (true) {
                 int x = getRandomNumber(1, 50);
@@ -54,6 +55,12 @@ public class Main extends Application {
                     break;
                 }
             }
+        }
+
+        for(Vector2f item : v) {
+            Circle point = new Circle((item.x * 10), (item.y * 10), 4);
+            point.setFill(Color.RED);
+            root.getChildren().add(point);
         }
 
         for (Vector2f item : v) {
@@ -73,8 +80,9 @@ public class Main extends Application {
                     Vector2f vertex2 = v.get(rand.nextInt(v.size()));
                     // Wygeneruj krawędź dla pary wierzchołków bez powtórzeń
                     // 1-2, 1-3, 1-4, 2-4 itd...
-                    if (item != vertex2) {
-                        if (!(e.contains(new Edge(item, vertex2)) || e.contains(new Edge(vertex2, item)))) {
+                    if (item.x != vertex2.x && item.y != vertex2.y) {
+                        //System.out.printf("Tak x=%d i y=%d jest rozne od x2=%d i y2=%d \n", item.x, item.y, vertex2.x, vertex2.y);
+                        if (!e.contains(new Edge(item, vertex2)) && !e.contains(new Edge(vertex2, item))) {
                             e.add(new Edge(item, vertex2));
                             break;
                         }
@@ -82,6 +90,8 @@ public class Main extends Application {
                 }
             }
         }
+
+
 
         // Czy najbliższy element w lewym górnym rogu ma krawędź
         for (Vector2f item : v) {
@@ -116,20 +126,9 @@ public class Main extends Application {
         for (Edge item : e) {
             Vector2f item1 = item.v1;
             Vector2f item2 = item.v2;
-            line = new Line((double) item1.x * 10, (double) item1.y * 10, (double) item2.x * 10, (double) item2.y * 10);
+            line = new Line(item1.x * 10,  item1.y * 10,  item2.x * 10,  item2.y * 10);
             line.setStroke(Color.BLUEVIOLET);
             root.getChildren().add(line);
-        }
-
-        // Rysuj wierzchołki
-        for (Vector2f item : v) {
-            Circle point = new Circle((item.x * 10), (item.y * 10), 4);
-            point.setFill(Color.BLACK);
-            root.getChildren().add(point);
-        }
-
-        for (Edge item : e) {
-            System.out.println("[" + item.v1.x + ";" + item.v1.y + "] <=> [" + item.v2.x + ";" + item.v2.y + "]");
         }
 
         // TODO
@@ -157,19 +156,22 @@ public class Main extends Application {
 
         while(visited.size() < v.size()) {
 
-            List<Vector2f> temp_origin = nodes.get(level - 1).destination;
-            List<Vector2f> temp_destination = new ArrayList<>();
+            List<Vector2f> node_origin = nodes.get(level - 1).destination;
+            List<Vector2f> node_destination = new ArrayList<>();
 
-            for (Edge i1 : e) {
-                for (Vector2f i2 : temp_origin) {
-                    if (i1.v1.x == i2.x && i1.v1.y == i2.y && !visited.contains(new Vector2f(i2.x, i2.y))) {
-                        temp_destination.add(new Vector2f(i1.v2.x, i1.v2.y));
-                        visited.add(new Vector2f(i2.x, i2.y));
+            for(Edge i1 : e) {
+                for(Vector2f i2 : node_origin) {
+                    if(i1.v1.x == i2.x && i1.v1.y == i2.y) {
+                        //System.out.println("Wartosci sa sobie rowne => " + i1.v1.x + ";"+i1.v1.y+" & " +i2.x + ";"+ i2.y);
+                        if(!visited.contains(new Vector2f(i2.x, i2.y))) {
+                            node_destination.add(new Vector2f(i1.v2.x, i1.v2.y));
+                            visited.add(new Vector2f(i2.x, i2.y));
+                        }
                     }
                 }
             }
 
-            nodes.add(new Node(temp_origin, temp_destination, level));
+            nodes.add(new Node(node_origin, node_destination, level));
             level++;
 
         }
@@ -192,13 +194,20 @@ public class Main extends Application {
         int GREEN = 255;
         int BLUE = 0;
 
+        for (Edge item : e) {
+            System.out.println("[" + item.v1.x + ";" + item.v1.y + "] <=> [" + item.v2.x + ";" + item.v2.y + "]");
+
+            Circle point = new Circle(item.v1.x * 10, item.v1.y * 10, 4);
+            point.setFill(Color.RED);
+            root.getChildren().add(point);
+
+            Circle point2 = new Circle((item.v2.x * 10), (item.v2.y * 10), 4);
+            point2.setFill(Color.RED);
+            root.getChildren().add(point2);
+        }
+
         // Rysuj wierzchołki
         for (Node item : nodes) {
-            for(Vector2f i1 : item.origin) {
-                Circle point = new Circle((i1.x * 10), (i1.y * 10), 4);
-                point.setFill(Color.rgb(RED, GREEN, BLUE));
-                root.getChildren().add(point);
-            }
 
             for(Vector2f i2 : item.destination) {
                 Circle point = new Circle((i2.x * 10), (i2.y * 10), 4);
@@ -206,9 +215,20 @@ public class Main extends Application {
                 root.getChildren().add(point);
             }
 
+            for(Vector2f i1 : item.origin) {
+                Circle point = new Circle((i1.x * 10), (i1.y * 10), 4);
+                point.setFill(Color.rgb(RED, GREEN, BLUE));
+                root.getChildren().add(point);
+            }
+
             GREEN = GREEN - color;
             RED = RED + color;
+
         }
+
+        Circle point = new Circle((FIRST_POINT.x * 10), (FIRST_POINT.y * 10), 4);
+        point.setFill(Color.rgb(0, 255, 0));
+        root.getChildren().add(point);
 
         Scene scene = new Scene(root, WINDOW_SIZE, WINDOW_SIZE);
         stage.setTitle("Projekt 22 - Bartosz Rogowski");
@@ -216,6 +236,7 @@ public class Main extends Application {
         stage.setResizable(false);
         stage.show();
     }
+
 
     private void draw_background(Group root) {
 

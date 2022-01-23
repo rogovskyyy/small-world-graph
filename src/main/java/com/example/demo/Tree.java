@@ -3,6 +3,6 @@ package com.example.demo;
 import java.util.List;
 
 public class Tree {
-    List<Vector2f> visited;
-    List<Node> nodes;
+    public List<Vector2f> visited;
+    public List<Node> nodes;
 }
