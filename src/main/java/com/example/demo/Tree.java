@@ -1,5 +1,8 @@
 package com.example.demo;
 
-public class Tree {
+import java.util.List;
 
+public class Tree {
+    List<Vector2f> visited;
+    List<Node> nodes;
 }
